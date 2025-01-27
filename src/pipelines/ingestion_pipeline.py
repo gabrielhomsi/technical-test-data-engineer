@@ -95,7 +95,7 @@ class IngestionPipeline:
 
             items, page, size, pages = data["items"], data["page"], data["size"], data["pages"]
 
-            logging.info(f"Read {size} items from page {page}/{size} [{endpoint}]")
+            logging.info(f"Read {size} items from page {page}/{pages} [{endpoint}]")
 
             assert len(items) == size
 

@@ -1,4 +1,5 @@
 import json
+import os
 
 import requests
 import logging
@@ -6,6 +7,10 @@ import logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(),  # output to console
+        logging.FileHandler("ingestion_pipeline.log", mode="a")  # output to .log file (append mode)
+    ]
 )
 
 
@@ -57,24 +62,21 @@ class IngestionPipeline:
     def save_tracks(self, tracks: list, out_path: str):
         logging.info(f"Saving tracks to {out_path}")
 
-        with open(out_path, "w") as f:
-            json.dump(tracks, f)
+        self.__save_data(tracks, out_path)
 
         logging.info(f"Finished saving tracks")
 
     def save_users(self, users: list, out_path: str):
         logging.info(f"Saving users to {out_path}")
 
-        with open(out_path, "w") as f:
-            json.dump(users, f)
+        self.__save_data(users, out_path)
 
         logging.info(f"Finished saving users")
 
     def save_listen_history(self, listen_history: list, out_path: str):
         logging.info(f"Saving listen history to {out_path}")
 
-        with open(out_path, "w") as f:
-            json.dump(listen_history, f)
+        self.__save_data(listen_history, out_path)
 
         logging.info(f"Finished saving listen history")
 
@@ -107,6 +109,13 @@ class IngestionPipeline:
         logging.info(f"Collected a total of {len(all_items)} from {endpoint}")
 
         return all_items
+
+    def __save_data(self, data: list, out_path: str):
+        if os.path.exists(out_path):
+            logging.warning(f"File {out_path} already exists. Overwriting")
+
+        with open(out_path, "w") as f:
+            json.dump(data, f)
 
 
 def main():

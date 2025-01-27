@@ -24,7 +24,7 @@ class IngestionPipeline:
 
     def __init__(self, api_url: str):
         self.api_url = api_url
-        self.timeout = 10  # 10 seconds
+        self.timeout = 10  # timeout (in seconds) for requests.get
 
         self.tracks_out_path = "tracks.json"
         self.users_out_path = "users.json"
@@ -124,11 +124,15 @@ class IngestionPipeline:
         return all_items
 
     def __save_data(self, data: list, out_path: str):
-        if os.path.exists(out_path):
-            logging.warning(f"File {out_path} already exists. Overwriting")
+        try:
+            if os.path.exists(out_path):
+                logging.warning(f"File {out_path} already exists. Overwriting")
 
-        with open(out_path, "w") as f:
-            json.dump(data, f)
+            with open(out_path, "w") as f:
+                json.dump(data, f)
+        except Exception as e:
+            logging.error(f"Failed to save data to {out_path}: {e}")
+            raise
 
 
 def main():

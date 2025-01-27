@@ -1,5 +1,6 @@
 import json
 import os
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import requests
 import logging
@@ -33,9 +34,14 @@ class IngestionPipeline:
     def ingest(self):
         logging.info("Starting data ingestion")
 
-        tracks = self.get_tracks()
-        users = self.get_users()
-        listen_history = self.get_listen_history()
+        with ThreadPoolExecutor() as executor:
+            tracks_future = executor.submit(self.get_tracks)
+            users_future = executor.submit(self.get_users)
+            listen_history_future = executor.submit(self.get_listen_history)
+
+            tracks = tracks_future.result()
+            users = users_future.result()
+            listen_history = listen_history_future.result()
 
         self.save_tracks(tracks, self.tracks_out_path)
         self.save_users(users, self.users_out_path)
@@ -44,6 +50,9 @@ class IngestionPipeline:
         logging.info("Data ingestion completed")
 
     def get_tracks(self) -> list:
+        """
+        Fetches the tracks data from the API and returns it as a list.
+        """
         logging.info("Fetching tracks data")
 
         tracks = self.__read_pages(f"{self.api_url}/tracks")
@@ -53,6 +62,9 @@ class IngestionPipeline:
         return tracks
 
     def get_users(self) -> list:
+        """
+        Fetches the users data from the API and returns it as a list.
+        """
         logging.info("Fetching users data")
 
         users = self.users = self.__read_pages(f"{self.api_url}/users")
@@ -62,6 +74,9 @@ class IngestionPipeline:
         return users
 
     def get_listen_history(self) -> list:
+        """
+        Fetches the listen history data from the API and returns it as a list.
+        """
         logging.info("Fetching listen history data")
 
         listen_history = self.__read_pages(f"{self.api_url}/listen_history")

@@ -12,6 +12,7 @@ logging.basicConfig(
 class IngestionPipeline:
     def __init__(self, api_url: str):
         self.api_url = api_url
+        self.timeout = 10  # 10 seconds
 
     def ingest(self):
         logging.info("Starting data ingestion")
@@ -85,7 +86,7 @@ class IngestionPipeline:
         all_items = []
 
         while True:
-            response = requests.get(url=endpoint, params={"page": page})
+            response = requests.get(url=endpoint, params={"page": page}, timeout=self.timeout)
             response.raise_for_status()
 
             data = response.json()

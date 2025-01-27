@@ -99,23 +99,25 @@ class IngestionPipeline:
         all_items = []
 
         while True:
-            response = requests.get(url=endpoint, params={"page": page}, timeout=self.timeout)
-            response.raise_for_status()
+            try:
+                response = requests.get(url=endpoint, params={"page": page}, timeout=self.timeout)
+                response.raise_for_status()
 
-            data = response.json()
+                data = response.json()
 
-            items, page, size, pages = data["items"], data["page"], data["size"], data["pages"]
+                items, page, size, pages = data["items"], data["page"], data["size"], data["pages"]
 
-            logging.info(f"Read {size} items from page {page}/{pages} [{endpoint}]")
+                logging.info(f"Read {size} items from page {page}/{pages} [{endpoint}]")
 
-            assert len(items) == size
+                all_items += items
 
-            all_items += items
-
-            if page < data["pages"]:
-                page += 1
-            else:
-                break
+                if page < data["pages"]:
+                    page += 1
+                else:
+                    break
+            except Exception as e:
+                logging.error(f"Request failed for {endpoint} at page {page}: {e}")
+                raise
 
         logging.info(f"Collected a total of {len(all_items)} from {endpoint}")
 

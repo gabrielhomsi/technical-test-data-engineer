@@ -15,9 +15,20 @@ logging.basicConfig(
 
 
 class IngestionPipeline:
+    """
+    This class implements a pipeline for ingesting data from an API.
+
+    It fetches data from multiple API endpoints ("/tracks", "/users", and "/listen_history"),
+    and saves the data in JSON files.
+    """
+
     def __init__(self, api_url: str):
         self.api_url = api_url
         self.timeout = 10  # 10 seconds
+
+        self.tracks_out_path = "tracks.json"
+        self.users_out_path = "users.json"
+        self.listen_history_out_path = "listen_history.json"
 
     def ingest(self):
         logging.info("Starting data ingestion")
@@ -26,9 +37,9 @@ class IngestionPipeline:
         users = self.get_users()
         listen_history = self.get_listen_history()
 
-        self.save_tracks(tracks, "tracks.json")
-        self.save_users(users, "users.json")
-        self.save_listen_history(listen_history, "listen_history.json")
+        self.save_tracks(tracks, self.tracks_out_path)
+        self.save_users(users, self.users_out_path)
+        self.save_listen_history(listen_history, self.listen_history_out_path)
 
         logging.info("Data ingestion completed")
 
@@ -120,8 +131,8 @@ class IngestionPipeline:
 
 def main():
     api_url = "http://127.0.0.1:8000"
-    pipeline = IngestionPipeline(api_url)
 
+    pipeline = IngestionPipeline(api_url)
     pipeline.ingest()
 
 
